@@ -36,8 +36,6 @@ LV có thể thay đổi kích thước dễ dàng, tất cả chỉ phụ thu�
 
 Bước 1: Kiểm tra các disk hiện tại bằng câu lệnh ``lsblk``:
 
-<img src="">
-
 Bước 2: Tạo Physical Volume 
 
 Tạo Physical Volume bằng câu lệnh:
@@ -99,3 +97,45 @@ Tạo thư mục để mount là ``/mnt/lvm-test`` sau đó mount LV vào để 
 [root@2node2 ~]# mkdir /mnt/lvm-test
 [root@2node2 ~]# mount /dev/vg-test/lv-test /mnt/lvm-test/
 ```
+
+### Thay đổi kích thước LV
+
+1. Tăng kích thước LV
+
+``lvextend -L +50M /dev/vg-test/lv-test``
+
+Kích thước cho Logical Volume thì Logical Volume đã được tăng nhưng file system trên volume này vẫn chưa thay đổi, sử dụng lệnh sau:
+
+``resize2fs /dev/vg-test/lv-test``
+
+2. Giảm kích thước LV
+
+``lvreduce -L 20M /dev/vg-test/lv-test``
+
+Sau đó tiến hành format lại filesystem và mount để sử dụng
+
+### Thay đổi kích thước VG
+
+1. Thêm các PV vào VG :
+
+``vgextend /dev/vg-test /dev/vdb``
+
+2. Xóa PV ra khỏi VG
+
+``vgreduce /dev/vg-test /dev/vdb``
+
+### Xóa LV, VG, PV
+
+Trước tiên ta phải umount LV 
+
+1. Xóa lV 
+
+``lvremove /dev/vg-test/lv-test``
+
+2. Xóa VG
+
+``vgremove /dev/vg-test``
+
+3. Xóa PV 
+
+``pvremove /dev/vdb``
