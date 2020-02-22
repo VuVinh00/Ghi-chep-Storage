@@ -20,6 +20,8 @@ Raid được chia làm nhiều loại. Các Raid được sử dụng có thể
 
 ### Raid 0
 
+<img src="https://github.com/VuVinh00/Images/blob/master/Raid%200.png">
+
 Raid 0 là loại Raid khá phổ biến, bởi có khả năng nâng cao hiệu suất tốc độc đọc ghi trao đổi dữ liệu của ổ cứng. Để tiến hành setup Raid 0 thì cần tối thiểu 2 ổ đĩa (Disk 0, Disk 1).
 
 Cách lưu trữ dữ liệu: Có 1 file A dung lượng 100MB. Khi tiến hành lưu trữ thay vì file A sẽ được lưu vào 1 ổ cứng duy nhất, Raid 0 sẽ lưu vào 2 ổ đĩa disk 0, disk 1 mỗi ổ 50MB (Striping), giảm thời gian đọc ghi xuống 1 nửa theo lý thuyết.
@@ -36,6 +38,8 @@ Nhược điểm:
 Thích hợp với những dịch vụ cần lưu trữ và truy xuất với tốc độ cao. Chẳng hạn như dịch vụ video streaming, chạy cơ sở dữ liệu.
 
 ### Raid 1
+
+<img src="https://github.com/VuVinh00/Images/blob/master/Raid%201.png">
 
 Raid 1 là loại Raid cơ bản. Tăng độ an toàn về dữ liệu. Tiến hành setup Raid 1 cần tối thiểu 2 ổ cứng để lưu trữ.
 
@@ -55,6 +59,8 @@ Các dịch vụ lưu trữ, các website vừa và nhỏ không yêu cầu quá
 
 ### Raid 10
 
+<img src="https://github.com/VuVinh00/Images/blob/master/raid10.png">
+
 Raid 10 là sự kết hợp giữa 2 loại raid phổ biến và Raid 1 và Raid 0. Để setup Raid 10 cần sử dụng tối thiểu 4 ổ cứng (Disk 0, Disk 1, Disk 2, Disk 3).
 
 Dữ liệu sẽ được lưu đồng thời vào 4 ổ cứng. 2 ổ dạng Striping (Raid 0) và 2 ổ (Mirroring) Raid 1.
@@ -73,6 +79,8 @@ Raid 10 thích hợp với tất cả các đối tượng sử dụng (từ nh�
 
 ### Raid 5 
 
+<img src="https://github.com/VuVinh00/Images/blob/master/r5.png">
+
 Nguyên tắc của Raid 5 gần giống với 2 loại raid lưu trữ truyền thống là Raid 1 và Raid 0. Tách ra lưu trữ các ổ cứng riêng biệt và có phương án dự phòng khi có sự cố phát sinh đối với 1 ổ cứng bất kì trong cụm.
 
 Setup Raid 5 cần tối thiểu 3 ổ cứng. Giả sử có 1 file A thì khi lưu trữ sẽ tách ra 3 phần A1, A2, A3. Ba phần nãy sẽ tương ứng lưu trên ổ đĩa Disk 0, Disk 1, Disk 2, còn ổ đĩa Disk 3 sẽ giữ bản sao lưu backup của 3 phần này. Tương tự các file sau cũng vậy và tùy theo tiến trình thực hiện mà bản sao lưu có thể được lưu ở bất kì 1 trong những ổ trong cụm Raid.
@@ -89,6 +97,9 @@ Nhược điểm:
 Tất cả những website, dịch vụ, ứng dụng có số lượng truy cập và yêu cầu tài nguyên từ nhỏ đến vừa và lớn.
 
 ### Raid 6
+
+<img src="https://github.com/VuVinh00/Images/blob/master/r6.png">
+
 Mở rộng, và tương tự RAID 5. Lặp lại nhiều hơn số lần sự phân tách dữ liệu để ghi vào các đĩa cứng khác nhau RAID 6 yêu cầu tối thiểu 4 ổ cứng.
 
 Ưu điểm:
