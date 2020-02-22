@@ -34,3 +34,11 @@ Sau đó nhập thông tin cho phân vùng :
 Để lưu thông tin phân vùng vừa tạo nhập **w** để lưu vào ổ đĩa và thoát khỏi chế độ fdisk command 
 
 <img src="https://github.com/VuVinh00/Images/blob/master/fdisk4.png">
+
+**2. Xóa các partition**
+
+Để xóa partition thuộc disk /dev/vdc ta sử dụng câu lệnh: ``fdisk /dev/vdc``
+
+Để xóa partition bấm phím **d** sau đó nhập partition number muốn xóa sau đó nhập **w** để lưu và thoát
+
+<img src="https://github.com/VuVinh00/Images/blob/master/fdisk5.png">
