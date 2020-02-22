@@ -29,3 +29,73 @@ Một tập hợp các PV, từ VG sẽ có thể phân chia thành các Logical
 Đơn vị cuối cùng của hệ thống LVM, các LV tương đương với partition theo cách phân chia truyền thống
 
 LV có thể thay đổi kích thước dễ dàng, tất cả chỉ phụ thuộc vào kích thước của VG.
+
+## Làm việc với LVM 
+
+### Tạo Logical Volume trên LVM
+
+Bước 1: Kiểm tra các disk hiện tại bằng câu lệnh ``lsblk``:
+
+<img src="">
+
+Bước 2: Tạo Physical Volume 
+
+Tạo Physical Volume bằng câu lệnh:
+
+```
+[root@2node2 ~]# pvcreate /dev/vdc /dev/vdd
+  Physical volume "/dev/vdc" successfully created.
+  Physical volume "/dev/vdd" successfully created.
+```
+
+Bước 3: Tạo Volume Group
+
+Nhóm các Physical Volume thành Volume Group bằng câu lệnh :
+
+```
+[root@2node2 ~]# vgcreate vg-test /dev/vdc /dev/vdd
+  Volume group "vg-test" successfully created
+```
+
+Kiểm tra Volume Group: 
+
+``vgs``
+
+Bước 4 : Tạo Logical Volume
+
+Từ một Volume Group, tạo ra các Logical Volume bằng câu lệnh:
+
+```
+[root@2node2 ~]# lvcreate -L 5G -n lv-test vg-test
+  Logical volume "lv-test" created.
+```
+
+Trong đó: -L: Chỉ ra dung lượng của logical volume -n: Chỉ ra tên của logical volume Note: lv-test là tên Logical Volume, vg-test là Volume Group mà vừa tạo
+
+Kiểm tra lại Logical Volume bằng câu lệnh: 
+
+``lvs``
+
+Bước 5 : Định dạng Logical Volume bằng câu lệnh mkfs
+
+```
+[root@2node2 ~]# mkfs.xfs /dev/vg-test/lv-test
+meta-data=/dev/vg-test/lv-test   isize=512    agcount=4, agsize=327680 blks
+         =                       sectsz=512   attr=2, projid32bit=1
+         =                       crc=1        finobt=0, sparse=0
+data     =                       bsize=4096   blocks=1310720, imaxpct=25
+         =                       sunit=0      swidth=0 blks
+naming   =version 2              bsize=4096   ascii-ci=0 ftype=1
+log      =internal log           bsize=4096   blocks=2560, version=2
+         =                       sectsz=512   sunit=0 blks, lazy-count=1
+realtime =none                   extsz=4096   blocks=0, rtextents=0
+```
+
+Bước 6 : Mount và sử dụng:
+
+Tạo thư mục để mount là ``/mnt/lvm-test`` sau đó mount LV vào để sử dụng :
+
+```
+[root@2node2 ~]# mkdir /mnt/lvm-test
+[root@2node2 ~]# mount /dev/vg-test/lv-test /mnt/lvm-test/
+```
