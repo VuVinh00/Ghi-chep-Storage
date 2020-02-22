@@ -97,3 +97,7 @@ Mở rộng, và tương tự RAID 5. Lặp lại nhiều hơn số lần sự p
 Nhược điểm:
 
 - Chi phí phát sinh sẽ cao hơn RAID 5.
+
+## Tham khảo : 
+
+https://github.com/lacoski/khoa-luan/blob/master/RAID/raid%200%201%205.md
