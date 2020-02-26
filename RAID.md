@@ -109,6 +109,90 @@ Nhược điểm:
 
 - Chi phí phát sinh sẽ cao hơn RAID 5.
 
+###
+
+```
+[root@node2 test]# fio -filename=/mnt/test/testfio.txt \
+> -direct=1 \
+> -rw=randread \
+> -bs=4k \
+> -size=2G \
+> -runtime=1000 \
+> -group_reporting \
+> -name=mytest
+mytest: (g=0): rw=randread, bs=(R) 4096B-4096B, (W) 4096B-4096B, (T) 4096B-4096B, ioengine=psync, iodepth=1
+fio-3.7
+Starting 1 process
+mytest: Laying out IO file (1 file / 2048MiB)
+Jobs: 1 (f=1): [r(1)][100.0%][r=464KiB/s,w=0KiB/s][r=116,w=0 IOPS][eta 00m:00s]
+mytest: (groupid=0, jobs=1): err= 0: pid=16752: Thu Feb 27 07:32:58 2020
+   read: IOPS=117, BW=470KiB/s (481kB/s)(459MiB/1000002msec)
+    clat (usec): min=108, max=225823, avg=8507.68, stdev=5716.54
+     lat (usec): min=108, max=225823, avg=8508.21, stdev=5716.55
+    clat percentiles (usec):
+     |  1.00th=[   347],  5.00th=[  2409], 10.00th=[  3752], 20.00th=[  5276],
+     | 30.00th=[  6325], 40.00th=[  7177], 50.00th=[  8029], 60.00th=[  8848],
+     | 70.00th=[  9765], 80.00th=[ 10945], 90.00th=[ 12518], 95.00th=[ 14877],
+     | 99.00th=[ 26608], 99.50th=[ 32900], 99.90th=[ 67634], 99.95th=[ 90702],
+     | 99.99th=[156238]
+   bw (  KiB/s): min=  104, max=  600, per=100.00%, avg=469.66, stdev=66.78, samples=2000
+   iops        : min=   26, max=  150, avg=117.36, stdev=16.70, samples=2000
+  lat (usec)   : 250=0.34%, 500=1.54%, 750=0.55%, 1000=0.03%
+  lat (msec)   : 2=1.48%, 4=7.47%, 10=60.84%, 20=25.30%, 50=2.25%
+  lat (msec)   : 100=0.16%, 250=0.04%
+  cpu          : usr=0.61%, sys=51.74%, ctx=117438, majf=0, minf=34
+  IO depths    : 1=100.0%, 2=0.0%, 4=0.0%, 8=0.0%, 16=0.0%, 32=0.0%, >=64=0.0%
+     submit    : 0=0.0%, 4=100.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=0.0%, >=64=0.0%
+     complete  : 0=0.0%, 4=100.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=0.0%, >=64=0.0%
+     issued rwts: total=117447,0,0,0 short=0,0,0,0 dropped=0,0,0,0
+     latency   : target=0, window=0, percentile=100.00%, depth=1
+
+Run status group 0 (all jobs):
+   READ: bw=470KiB/s (481kB/s), 470KiB/s-470KiB/s (481kB/s-481kB/s), io=459MiB (481MB), run=1000002-1000002msec
+
+Disk stats (read/write):
+    md0: ios=117435/27, merge=0/0, ticks=0/0, in_queue=0, util=0.00%, aggrios=58723/5, aggrmerge=0/8, aggrticks=496431/185, aggrin_queue=496542, aggrutil=49.89%
+  sdb: ios=58636/8, merge=0/16, ticks=494615/348, in_queue=494886, util=49.52%
+  sdc: ios=58811/2, merge=0/1, ticks=498248/23, in_queue=498199, util=49.89%
+[root@node2 test]# fio -filename=/root/testfio.txt -direct=1 -rw=randread -bs=4k -size=2G -runtime=1000 -group_reporting2 -name=mytest2  fio: unrecognized option '-group_reporting2'
+fio: unrecognized option '-group_reporting2'
+Did you mean group_reporting?
+[root@node2 test]# fio -filename=/root/testfio.txt -direct=1 -rw=randread -bs=4k -size=2G -runtime=1000 -group_reporting -name=mytest2
+mytest2: (g=0): rw=randread, bs=(R) 4096B-4096B, (W) 4096B-4096B, (T) 4096B-4096B, ioengine=psync, iodepth=1
+fio-3.7
+Starting 1 process
+mytest2: Laying out IO file (1 file / 2048MiB)
+Jobs: 1 (f=1): [r(1)][100.0%][r=9KiB/s,w=0KiB/s][r=2,w=0 IOPS][eta 00m:00s]
+mytest2: (groupid=0, jobs=1): err= 0: pid=17391: Thu Feb 27 07:52:20 2020
+   read: IOPS=81, BW=326KiB/s (334kB/s)(319MiB/1000248msec)
+    clat (usec): min=138, max=1430.8k, avg=12258.81, stdev=18297.30
+     lat (usec): min=138, max=1430.8k, avg=12259.35, stdev=18297.33
+    clat percentiles (usec):
+     |  1.00th=[   461],  5.00th=[  3359], 10.00th=[  4752], 20.00th=[  6325],
+     | 30.00th=[  7504], 40.00th=[  8455], 50.00th=[  9503], 60.00th=[ 10683],
+     | 70.00th=[ 12125], 80.00th=[ 14746], 90.00th=[ 21365], 95.00th=[ 27919],
+     | 99.00th=[ 49021], 99.50th=[ 71828], 99.90th=[261096], 99.95th=[375391],
+     | 99.99th=[725615]
+   bw (  KiB/s): min=    2, max=  568, per=95.76%, avg=312.19, stdev=140.96, samples=1991
+   iops        : min=    0, max=  142, avg=77.92, stdev=35.28, samples=1991
+  lat (usec)   : 250=0.14%, 500=1.00%, 750=0.70%, 1000=0.02%
+  lat (msec)   : 2=0.59%, 4=4.44%, 10=47.24%, 20=34.20%, 50=10.71%
+  lat (msec)   : 100=0.65%, 250=0.21%, 500=0.09%, 750=0.01%, 1000=0.01%
+  cpu          : usr=0.59%, sys=51.32%, ctx=81575, majf=0, minf=35
+  IO depths    : 1=100.0%, 2=0.0%, 4=0.0%, 8=0.0%, 16=0.0%, 32=0.0%, >=64=0.0%
+     submit    : 0=0.0%, 4=100.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=0.0%, >=64=0.0%
+     complete  : 0=0.0%, 4=100.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=0.0%, >=64=0.0%
+     issued rwts: total=81547,0,0,0 short=0,0,0,0 dropped=0,0,0,0
+     latency   : target=0, window=0, percentile=100.00%, depth=1
+
+Run status group 0 (all jobs):
+   READ: bw=326KiB/s (334kB/s), 326KiB/s-326KiB/s (334kB/s-334kB/s), io=319MiB (334MB), run=1000248-1000248msec
+
+Disk stats (read/write):
+    dm-0: ios=81547/9, merge=0/0, ticks=994411/238, in_queue=995320, util=99.57%, aggrios=81547/8, aggrmerge=0/1, aggrticks=994823/205, aggrin_queue=994922, aggrutil=99.54%
+  sda: ios=81547/8, merge=0/1, ticks=994823/205, in_queue=994922, util=99.54%
+```
+
 ## Tham khảo : 
 
 https://github.com/lacoski/khoa-luan/blob/master/RAID/raid%200%201%205.md
