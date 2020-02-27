@@ -349,6 +349,123 @@ Disk stats (read/write):
   sda: ios=81547/8, merge=0/1, ticks=994823/205, in_queue=994922, util=99.54%
 ```
 
+#### RAID1 
+
+Bước 1: Tương tự như RAID0
+
+Bước 2: Tương tự như RAID0
+
+Bước 3: Tạo RAID1
+
+Ta sẽ tạo thiết bị RAID1 có tên ``dev/md0`` bằng cách sử dụng câu lệnh sau:
+
+```
+[root@node2 ~]# mdadm --create /dev/md0 --level=mirror --raid-devices=2 /dev/sd[b-c]1
+mdadm: Note: this array has metadata at the start and
+    may not be suitable as a boot device.  If you plan to
+    store '/boot' on this device please ensure that
+    your boot-loader understands md/v1.x metadata, or use
+    --metadata=0.90
+mdadm: largest drive (/dev/sdc1) exceeds size (20953088K) by more than 1%
+Continue creating array? y
+mdadm: Defaulting to version 1.2 metadata
+mdadm: array /dev/md0 started.
+```
+
+Ta có thể kiểm tra lại bằng lệnh:
+
+```
+[root@node2 ~]# mdadm --detail /dev/md0
+/dev/md0:
+           Version : 1.2
+     Creation Time : Thu Feb 27 22:12:19 2020
+        Raid Level : raid1
+        Array Size : 20953088 (19.98 GiB 21.46 GB)
+     Used Dev Size : 20953088 (19.98 GiB 21.46 GB)
+      Raid Devices : 2
+     Total Devices : 2
+       Persistence : Superblock is persistent
+
+       Update Time : Thu Feb 27 22:19:12 2020
+             State : clean, resyncing
+    Active Devices : 2
+   Working Devices : 2
+    Failed Devices : 0
+     Spare Devices : 0
+
+Consistency Policy : resync
+
+     Resync Status : 18% complete
+
+              Name : node2:0  (local to host node2)
+              UUID : 3270066e:952ca40a:a27438f1:9fa16107
+            Events : 374
+
+    Number   Major   Minor   RaidDevice State
+       0       8       17        0      active sync   /dev/sdb1
+       1       8       33        1      active sync   /dev/sdc1
+```
+
+Bước 4: Tạo filesystem và mount vào thư mục ``/mnt/test`` như RAID0
+
+Bước 5: Kiểm tra dữ liệu sau khi hỏng đĩa
+
+Thử làm 1 đĩa bị lỗi bằng cách xóa partition sau đó kiểm tra lại dữ liệu, check trạng thái của RAID1 khi đĩa bị lỗi
+
+```
+[root@node2 test]# mdadm --detail /dev/md0
+/dev/md0:
+           Version : 1.2
+     Creation Time : Thu Feb 27 22:12:19 2020
+        Raid Level : raid1
+        Array Size : 20953088 (19.98 GiB 21.46 GB)
+     Used Dev Size : 20953088 (19.98 GiB 21.46 GB)
+      Raid Devices : 2
+     Total Devices : 1
+       Persistence : Superblock is persistent
+
+       Update Time : Thu Feb 27 22:26:27 2020
+             State : clean, degraded
+    Active Devices : 1
+   Working Devices : 1
+    Failed Devices : 0
+     Spare Devices : 0
+
+Consistency Policy : resync
+
+              Name : node2:0  (local to host node2)
+              UUID : 3270066e:952ca40a:a27438f1:9fa16107
+            Events : 399
+
+    Number   Major   Minor   RaidDevice State
+       -       0        0        0      removed
+       1       8       33        1      active sync   /dev/sdc1
+```
+
+Kết quả trả về là một ổ đĩa bị mất. Bây giờ thực hiện kiểm tra lại dữ liệu:
+
+```
+[root@node2 ~]# cd /mnt/test/
+[root@node2 test]# ls
+lost+found  test.cfg
+[root@node2 test]# cat test.cfg
+Test RAID1
+[root@node2 test]# df -h
+Filesystem               Size  Used Avail Use% Mounted on
+devtmpfs                 908M     0  908M   0% /dev
+tmpfs                    919M     0  919M   0% /dev/shm
+tmpfs                    919M  8.9M  911M   1% /run
+tmpfs                    919M     0  919M   0% /sys/fs/cgroup
+/dev/mapper/centos-root   17G  3.7G   14G  22% /
+/dev/sda1               1014M  192M  823M  19% /boot
+tmpfs                    184M     0  184M   0% /run/user/0
+/dev/md0                  20G   45M   19G   1% /mnt/test
+```
+
+#### RAID5
+
+
+
 ## Tham khảo : 
 
 https://github.com/lacoski/khoa-luan/blob/master/RAID/raid%200%201%205.md
