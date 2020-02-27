@@ -109,7 +109,162 @@ Nhược điểm:
 
 - Chi phí phát sinh sẽ cao hơn RAID 5.
 
-###
+### Cấu hình soft RAID
+
+RAID được quản lý bằng gói ``mdadm`` trong hầu hết các bản phân phối Linux. Để cài gói ``mdadm`` chạy lệnh:
+
+``yum install mdadm``
+
+#### RAID 0
+
+Bước 1: Kiểm tra thông tin ổ đĩa trên máy:
+
+Trước khi tạo RAID0, cần đảm bảo có ít nhất 2 ổ cứng, ta có thể kiểm tra các ổ cứng có sử dụng RAID nào chưa bằng lệnh ``mdadm``:
+
+```
+[root@node2 ~]# mdadm --examine /dev/sdb /dev/sdc
+mdadm: No md superblock detected on /dev/sdb.
+mdadm: No md superblock detected on /dev/sdc.
+```
+Bước 2: Tạo phân vùng đĩa cứng
+
+Thực hiện tạo phân vùng trên đĩa có tên là ``sdb`` và ``sdc`` cho RAID bằng ``fdisk``
+
+**Tạo phân vùng trên ổ đĩa sdb**:
+
+Chạy lệnh ``fdisk /dev/sdb`` để tạo phân vùng cho ``sdb`` và thực hiện các thao tác sau:
+
+- Nhấn **n** để tạo phân vùng mới
+- Chọn **p** cho phân vùng chính
+- Chọn số phân vùng là **1**
+- Nhập giá trị ban đầu, giá trị kết thúc và nhấn phím **Enter**
+
+Sau đây sẽ tạo Linux RAID tự động trên các phân vùng:
+
+- Nhập **t** để chọn phân vùng
+- Nhập **fd** để chọn loại phân vùng **Linux raid auto** và nhấn **Enter** để áp dụng
+- Cuối cùng nhấn **w** để lưu và thoát
+
+Thực hiện tương tự các phân vùng cho ``sdc``
+
+Tiếp theo chạy lệnh bên dưới để xem các đĩa có tham gia RAID nào không
+
+```
+[root@node2 test]# mdadm --examine /dev/sdb /dev/sdc
+/dev/sdb:
+   MBR Magic : aa55
+Partition[0] :     41940992 sectors at         2048 (type fd)
+/dev/sdc:
+   MBR Magic : aa55
+Partition[0] :     52426752 sectors at         2048 (type fd)
+[root@node2 test]# mdadm --examine /dev/sdb1 /dev/sdc1
+mdadm: No md superblock detected on /dev/sdb1.
+mdadm: No md superblock detected on /dev/sdc1.
+```
+Bước 3: Tạo RAID0
+
+Chúng ta chạy lệnh sau để tạo RAID0:
+
+```
+mdadm -C /dev/md0 -l raid0 -n 2 /dev/sdb1 /dev/sdc1
+mdadm: Defaulting to version 1.2 metadata
+mdadm: array /dev/md0 started.
+```
+Trong đó:
+- -C: tạo RAID mới
+- -l: Level của RAID
+- -n: Số lượng thiết bị RAID
+
+Ngoài ra lệnh tạo RAID0 sau đây cũng có ý nghĩa như lệnh chúng ta vừa chạy:
+
+``mdadm --create /dev/md0 --level=stripe --raid-devices=2 /dev/sd[b-c]1``
+
+Ta có thể chạy lệnh sau đây để kiểm tra:
+
+```
+[root@node2 ~]# mdadm --detail /dev/md0
+/dev/md0:
+           Version : 1.2
+     Creation Time : Thu Feb 27 07:01:22 2020
+        Raid Level : raid0
+        Array Size : 47149056 (44.96 GiB 48.28 GB)
+      Raid Devices : 2
+     Total Devices : 2
+       Persistence : Superblock is persistent
+
+       Update Time : Thu Feb 27 07:01:22 2020
+             State : clean
+    Active Devices : 2
+   Working Devices : 2
+    Failed Devices : 0
+     Spare Devices : 0
+
+        Chunk Size : 512K
+
+Consistency Policy : none
+
+              Name : node2:0  (local to host node2)
+              UUID : f3971b3e:c5d54cde:872f53ea:2b572102
+            Events : 0
+
+    Number   Major   Minor   RaidDevice State
+       0       8       17        0      active sync   /dev/sdb1
+       1       8       33        1      active sync   /dev/sdc1
+```
+Bước 4: Tạo filesystem cho thiết bị RAID ``/dev/md0``:
+
+```
+[root@localhost ~]#  mkfs.xfs /dev/md0
+mke2fs 1.42.9 (28-Dec-2013)
+Filesystem label=
+OS type: Linux
+Block size=4096 (log=2)
+Fragment size=4096 (log=2)
+Stride=128 blocks, Stripe width=256 blocks
+1310720 inodes, 5237760 blocks
+261888 blocks (5.00%) reserved for the super user
+First data block=0
+Maximum filesystem blocks=2153775104
+160 block groups
+32768 blocks per group, 32768 fragments per group
+8192 inodes per group
+Superblock backups stored on blocks:
+	32768, 98304, 163840, 229376, 294912, 819200, 884736, 1605632, 2654208,
+	4096000
+
+Allocating group tables: done
+Writing inode tables: done
+Creating journal (32768 blocks): done
+Writing superblocks and filesystem accounting information: done
+```
+
+Tạo thư mục ``/mnt/test`` để mount ``/dev/md0``:
+
+```
+[root@node2 ~]# mkdir /mnt/test
+[root@node2 ~]# mount /dev/md0 /mnt/test
+```
+
+Ta chạy lệnh ``df -h`` để kiểm tra xem thiết bị ``/dev/md0`` được mount vào ``/mnt/test`` chưa:
+
+```
+[root@node2 ~]# df -h
+Filesystem               Size  Used Avail Use% Mounted on
+devtmpfs                 1.9G     0  1.9G   0% /dev
+tmpfs                    1.9G     0  1.9G   0% /dev/shm
+tmpfs                    1.9G  8.9M  1.9G   1% /run
+tmpfs                    1.9G     0  1.9G   0% /sys/fs/cgroup
+/dev/mapper/centos-root   17G  3.7G   14G  22% /
+/dev/sda1               1014M  179M  836M  18% /boot
+/dev/md0                  45G  2.1G   40G   5% /mnt/test
+tmpfs                    379M     0  379M   0% /run/user/0
+```
+
+Chúng ta sẽ kiểm tra IOPS bằng công cụ ``fio``, cài đặt ``fio`` bằng câu lệnh:
+
+``yum install fio -y``
+
+Tiến hành kiểm tra read random trên ổ RAID0 đã được mount tại ``/mnt/test``
 
 ```
 [root@node2 test]# fio -filename=/mnt/test/testfio.txt \
@@ -154,9 +309,10 @@ Disk stats (read/write):
     md0: ios=117435/27, merge=0/0, ticks=0/0, in_queue=0, util=0.00%, aggrios=58723/5, aggrmerge=0/8, aggrticks=496431/185, aggrin_queue=496542, aggrutil=49.89%
   sdb: ios=58636/8, merge=0/16, ticks=494615/348, in_queue=494886, util=49.52%
   sdc: ios=58811/2, merge=0/1, ticks=498248/23, in_queue=498199, util=49.89%
-[root@node2 test]# fio -filename=/root/testfio.txt -direct=1 -rw=randread -bs=4k -size=2G -runtime=1000 -group_reporting2 -name=mytest2  fio: unrecognized option '-group_reporting2'
-fio: unrecognized option '-group_reporting2'
-Did you mean group_reporting?
+```
+Tiếp theo ta kiểm tra IOPS trên disk không được RAID
+
+```
 [root@node2 test]# fio -filename=/root/testfio.txt -direct=1 -rw=randread -bs=4k -size=2G -runtime=1000 -group_reporting -name=mytest2
 mytest2: (g=0): rw=randread, bs=(R) 4096B-4096B, (W) 4096B-4096B, (T) 4096B-4096B, ioengine=psync, iodepth=1
 fio-3.7
